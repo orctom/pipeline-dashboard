@@ -2,6 +2,7 @@ package com.orctom.pipeline;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -10,6 +11,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class PipelineConsoleApplication extends WebMvcConfigurerAdapter {
 
   public static void main(String[] args) {
-    SpringApplication.run(PipelineConsoleApplication.class, args);
+
+    ApplicationContext applicationContext = SpringApplication.run(PipelineConsoleApplication.class, args);
+
+    Pipeline.getInstance()
+        .withCluster("dummy")
+        .withName("collector")
+        .withApplicationContext(applicationContext)
+        .run(PipelineConsoleApplication.class);
   }
 }

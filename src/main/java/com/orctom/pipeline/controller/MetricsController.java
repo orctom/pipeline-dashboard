@@ -11,7 +11,6 @@ public class MetricsController {
   @MessageMapping("/metrics")
   @SendTo("/topic/metrics")
   public Metric metrics() {
-    System.out.println("metrics......");
     return new Metric("key", 10, 1.0F);
   }
 }
