@@ -19,23 +19,15 @@ jsPlumb.ready(function() {
         location: 1,
         visible: true,
         width: 11,
+        stroke: "red",
         length: 11,
-        id: "ARROW",
-        events: {
-          click: function() {
-            alert("you clicked on the arrow overlay")
-          }
-        }
+        id: "ARROW"
       }],
       ["Label", {
         location: 0.1,
         id: "label",
-        cssClass: "aLabel",
-        events: {
-          tap: function() {
-            alert("hey");
-          }
-        }
+        stroke: "red",
+        cssClass: "aLabel"
       }]
     ],
     Container: "canvas"
@@ -149,7 +141,6 @@ jsPlumb.ready(function() {
 
   // suspend drawing and initialise.
   instance.batch(function() {
-
     _addEndpoints("Window4", ["TopCenter", "BottomCenter"], ["LeftMiddle", "RightMiddle"]);
     _addEndpoints("Window2", ["LeftMiddle", "BottomCenter"], ["TopCenter", "RightMiddle"]);
     _addEndpoints("Window3", ["RightMiddle", "BottomCenter"], ["LeftMiddle", "TopCenter"]);
@@ -160,51 +151,30 @@ jsPlumb.ready(function() {
       init(connInfo.connection);
     });
 
-    instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), {
-      grid: [20, 20]
-    });
     instance.connect({
       uuids: ["Window2BottomCenter", "Window3TopCenter"],
-      editable: true
+      editable: false
     });
     instance.connect({
       uuids: ["Window2LeftMiddle", "Window4LeftMiddle"],
-      editable: true
+      editable: false
     });
     instance.connect({
       uuids: ["Window4TopCenter", "Window4RightMiddle"],
-      editable: true
+      editable: false
     });
     instance.connect({
       uuids: ["Window3RightMiddle", "Window2RightMiddle"],
-      editable: true
+      editable: false
     });
     instance.connect({
       uuids: ["Window4BottomCenter", "Window1TopCenter"],
-      editable: true
+      editable: false
     });
     instance.connect({
       uuids: ["Window3BottomCenter", "Window1BottomCenter"],
-      editable: true
+      editable: false
     });
-
-    instance.bind("click", function(conn, originalEvent) {
-      conn.toggleType("basic");
-    });
-
-    instance.bind("connectionDrag", function(connection) {
-      console.log("connection " + connection.id + " is being dragged. suspendedElement is ", connection.suspendedElement, " of type ", connection.suspendedElementType);
-    });
-
-    instance.bind("connectionDragStop", function(connection) {
-      console.log("connection " + connection.id + " was dragged");
-    });
-
-    instance.bind("connectionMoved", function(params) {
-      console.log("connection " + params.connection.id + " was moved");
-    });
-
-    jsPlumb.fire("jsPlumbDemoLoaded", instance);
     //connect();
   });
 });

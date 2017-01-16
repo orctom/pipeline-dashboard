@@ -14,10 +14,10 @@ public class PipelineConsoleApplication extends WebMvcConfigurerAdapter {
 
     ApplicationContext applicationContext = SpringApplication.run(PipelineConsoleApplication.class, args);
 
-    Pipeline.getInstance()
-        .withCluster("dummy")
-        .withName("collector")
-        .withApplicationContext(applicationContext)
-        .run(PipelineConsoleApplication.class);
+//    Pipeline.getInstance()
+//        .withCluster("dummy")
+//        .withName("collector")
+//        .withApplicationContext(applicationContext)
+//        .run(PipelineConsoleApplication.class);
   }
 }
