@@ -19,14 +19,14 @@ jsPlumb.ready(function() {
         location: 1,
         visible: true,
         width: 11,
-        stroke: "red",
+        stroke: "blue",
         length: 11,
         id: "ARROW"
       }],
       ["Label", {
         location: 0.1,
         id: "label",
-        stroke: "red",
+        stroke: "blue",
         cssClass: "aLabel"
       }]
     ],
@@ -119,7 +119,7 @@ jsPlumb.ready(function() {
       ]
     },
     init = function(connection) {
-      connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
+      connection.getOverlay("label").setLabel(connection.sourceId.substring(10) + "-" + connection.targetId.substring(10));
     };
 
   var _addEndpoints = function(toId, sourceAnchors, targetAnchors) {
@@ -175,6 +175,13 @@ jsPlumb.ready(function() {
       uuids: ["Window3BottomCenter", "Window1BottomCenter"],
       editable: false
     });
-    //connect();
+
+  });
+
+  //connect();
+
+  instance.connect({
+    source:"aaa",
+    target:"bbb"
   });
 });
