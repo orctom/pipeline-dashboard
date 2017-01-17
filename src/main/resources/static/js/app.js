@@ -1,3 +1,14 @@
+var connect = function(onMessage) {
+  var socket = new SockJS('/metrics-websocket');
+  var stompClient = Stomp.over(socket);
+  stompClient.connect({}, function(frame) {
+    stompClient.subscribe('/topic/metrics', function(message) {
+      onMessage(JSON.parse(message.body));
+    });
+    stompClient.send("/app/metrics");
+  });
+};
+
 var basicType = {
   connector: "StateMachine",
   paintStyle: {
@@ -18,20 +29,20 @@ var connectorPaintStyle = {
   joinstyle: "round",
   outlineStroke: "white",
   outlineWidth: 2
-},
-// .. and this is the hover style.
-connectorHoverStyle = {
+};
+
+var connectorHoverStyle = {
   strokeWidth: 3,
   stroke: "#216477",
   outlineWidth: 5,
   outlineStroke: "white"
-},
-endpointHoverStyle = {
+};
+var endpointHoverStyle = {
   fill: "#216477",
   stroke: "#216477"
-},
+};
 
-endpointOptions = {
+var endpointOptions = {
   endpoint: "Dot",
   paintStyle: {
     stroke: "#7AB02C",
@@ -66,21 +77,12 @@ endpointOptions = {
   ]
 };
 
-var connect = function() {
-  var socket = new SockJS('/metrics-websocket');
-  var stompClient = Stomp.over(socket);
-  stompClient.connect({}, function(frame) {
-    console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/metrics', function(metrics) {
-      console.dir(metrics);
-    });
-    stompClient.send("/app/metrics");
-  });
-};
-
 jsPlumb.ready(function() {
   var instance = jsPlumb.getInstance({
-    DragOptions: { cursor: 'pointer', zIndex: 2000 },
+    DragOptions: {
+      cursor: 'pointer',
+      zIndex: 2000
+    },
     ConnectionOverlays: [
       ["Arrow", {
         location: 1,
@@ -114,11 +116,12 @@ jsPlumb.ready(function() {
     });
   };
 
-
+  connect(function(metrics) {
+    console.log("message::::::::::::");
+    console.dir(metrics);
+    console.log("========================");
+  });
   instance.batch(function() {
 
   });
-
-  //connect();
-
 });
