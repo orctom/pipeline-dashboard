@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@Actor
+@Actor("dummyProducer")
 public class DummyMetricsProducer extends UntypedActor {
 
   private ActorRef metricCollector = ActorFactory.actorOf(MetricsCollector.class);
@@ -20,13 +20,17 @@ public class DummyMetricsProducer extends UntypedActor {
   @Override
   public void preStart() throws Exception {
     super.preStart();
+//    startSendingThread();
+  }
+
+  private void startSendingThread() {
     ExecutorService es = Executors.newSingleThreadExecutor();
     es.submit(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         try {
           Metric metrics = new Metric("key", RandomStringUtils.randomAlphabetic(5));
           metricCollector.tell(
-              new PipelineMetrics("dummy-actor", metrics),
+              new PipelineMetrics("Metrics Center", "dummy-actor", metrics),
               getSelf()
           );
           TimeUnit.SECONDS.sleep(1);

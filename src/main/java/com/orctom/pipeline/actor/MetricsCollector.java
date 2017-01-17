@@ -7,7 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.annotation.Resource;
 
-@Actor("metrics-collector")
+@Actor(role = "metrics-collector")
 class MetricsCollector extends AbstractMetricsCollector {
   
   @Resource
@@ -15,6 +15,7 @@ class MetricsCollector extends AbstractMetricsCollector {
 
   @Override
   public void onMessage(PipelineMetrics metric) {
+    System.out.println(metric);
     template.convertAndSend("/topic/metrics", metric);
   }
 }
