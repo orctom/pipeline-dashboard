@@ -20,7 +20,7 @@ public class DummyMetricsProducer extends UntypedActor {
   @Override
   public void preStart() throws Exception {
     super.preStart();
-    startSendingThread();
+//    startSendingThread();
   }
 
   private void startSendingThread() {
