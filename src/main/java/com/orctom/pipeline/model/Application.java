@@ -1,14 +1,13 @@
 package com.orctom.pipeline.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.google.common.base.Strings;
 
 public class Application {
 
   private String name;
-  private Set<String> roles = new HashSet<>();
+  private String roles;
 
-  public Application(String name, Set<String> roles) {
+  public Application(String name, String roles) {
     this.name = name;
     this.roles = roles;
   }
@@ -21,12 +20,24 @@ public class Application {
     this.name = name;
   }
 
-  public Set<String> getRoles() {
+  public String getRoles() {
     return roles;
   }
 
-  public void setRoles(Set<String> roles) {
+  public void setRoles(String roles) {
     this.roles = roles;
+  }
+
+  void addRoles(String roles) {
+    if (Strings.isNullOrEmpty(roles)) {
+      return;
+    }
+
+    if (Strings.isNullOrEmpty(this.roles)) {
+      this.roles = roles;
+    } else {
+      this.roles += "," + roles;
+    }
   }
 
   @Override

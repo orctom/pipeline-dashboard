@@ -116,10 +116,48 @@ jsPlumb.ready(function() {
     });
   };
 
-  connect(function(metrics) {
-    console.log("message::::::::::::");
-    console.dir(metrics);
-    console.log("========================");
+  var processMessage = function(message) {
+    var type = message.type;
+    var key = message.key;
+    var field = message.field;
+    var value = message.value;
+    switch(type) {
+      case "ENDPOINT": {
+        processEndpoint(key, value);
+        break;
+      }
+      case "CONNECTION": {
+        processConnection(key, value);
+        break;
+      }
+      case "METER": {
+        processMeter(key, field, value);
+        break;
+      }
+    }
+  };
+
+  var processEndpoint = function(key, value) {
+    
+  };
+
+  var processConnection = function(key, value) {
+
+  };
+
+  var processMeter = function(key, field, value) {
+
+  };
+
+  connect(function(message) {
+    if (Array.isArray(message)) {
+      for (var i in message) {
+        var msg = message[i];
+        processMessage(msg);
+      }
+    } else {
+      processMessage(message);
+    }
   });
   instance.batch(function() {
 

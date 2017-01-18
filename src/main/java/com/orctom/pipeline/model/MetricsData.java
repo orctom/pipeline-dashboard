@@ -11,10 +11,9 @@ public class MetricsData {
   private static Set<Connection> connections = new HashSet<>();
 
   public static void addApplication(String applicationName, String roles) {
-    Set<String> roleSet = new HashSet<>(Splitter.on(",").omitEmptyStrings().trimResults().splitToList(roles));
-    Application application = applications.putIfAbsent(applicationName, new Application(applicationName, roleSet));
+    Application application = applications.putIfAbsent(applicationName, new Application(applicationName, roles));
     if (null != application) {
-      application.getRoles().addAll(roleSet);
+      application.addRoles(roles);
     }
   }
 
