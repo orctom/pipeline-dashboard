@@ -192,13 +192,14 @@ jsPlumb.ready(function() {
     } else {
       var meter_key = id + "-" + meter;
       if (meters[meter_key]) {
-        return;
+        $("#" + id + " ." + meter).text(value);
+      } else {
+        var $meter = $("#template-meter").clone().removeAttr("id");
+        $meter.find(".badge").text(value).addClass(meter);
+        $meter.find(".meter").text(meter);
+        $meter.appendTo("#" + id + " > .list-group");
+        meters[meter_key] = meter_key;
       }
-      meters[meter_key] = meter_key;
-      var $meter = $("#template-meter").clone().removeAttr("id");
-      $meter.find(".badge").text(value);
-      $meter.find(".meter").text(meter);
-      $meter.appendTo("#" + id + " > .list-group");
     }
   };
 
@@ -229,7 +230,7 @@ jsPlumb.ready(function() {
     }
 
     // clean meters
-    
+
   };
 
   var applications = {};

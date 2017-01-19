@@ -5,6 +5,8 @@ import com.google.common.base.CharMatcher;
 import com.orctom.pipeline.annotation.Actor;
 import com.orctom.pipeline.model.*;
 import com.orctom.pipeline.precedure.AbstractMetricsCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.annotation.Resource;
@@ -14,12 +16,15 @@ import static com.orctom.pipeline.Constants.MEMBER_EVENT_UP;
 
 @Actor(role = "metrics-collector")
 class MetricsCollector extends AbstractMetricsCollector {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetricsCollector.class);
   
   @Resource
   private SimpMessagingTemplate template;
 
   @Override
   public void onMessage(PipelineMetrics metric) {
+    LOGGER.debug(metric.toString());
     String metricType = metric.getKey();
     if ("routee".equals(metricType)) {
       send(new Message(
