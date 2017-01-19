@@ -1,14 +1,16 @@
 package com.orctom.pipeline.actor;
 
 import akka.actor.ActorRef;
+import com.google.common.base.CharMatcher;
 import com.orctom.pipeline.annotation.Actor;
-import com.orctom.pipeline.model.MemberInfo;
-import com.orctom.pipeline.model.MetricsData;
-import com.orctom.pipeline.model.PipelineMetrics;
+import com.orctom.pipeline.model.*;
 import com.orctom.pipeline.precedure.AbstractMetricsCollector;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.annotation.Resource;
+
+import static com.orctom.pipeline.Constants.MEMBER_EVENT_DOWN;
+import static com.orctom.pipeline.Constants.MEMBER_EVENT_UP;
 
 @Actor(role = "metrics-collector")
 class MetricsCollector extends AbstractMetricsCollector {
@@ -18,8 +20,46 @@ class MetricsCollector extends AbstractMetricsCollector {
 
   @Override
   public void onMessage(PipelineMetrics metric) {
-    System.out.println(metric);
-    template.convertAndSend("/topic/metrics", metric);
+    String metricType = metric.getKey();
+    if ("routee".equals(metricType)) {
+      send(new Message(
+          metric.getTimestamp(),
+          Type.CONNECTION,
+          metric.getRole(),
+          CharMatcher.anyOf("[]").trimFrom(metric.getGauge())
+      ));
+
+    } else if (MEMBER_EVENT_UP.equals(metricType)) {
+      send(new Message(
+          metric.getTimestamp(),
+          Type.METER,
+          metric.getApplicationName(),
+          MEMBER_EVENT_UP,
+          metric.getRole()
+      ));
+
+    } else if (MEMBER_EVENT_DOWN.equals(metricType)) {
+      send(new Message(
+          metric.getTimestamp(),
+          Type.METER,
+          metric.getApplicationName(),
+          MEMBER_EVENT_DOWN,
+          metric.getRole()
+      ));
+
+    } else {
+      send(new Message(
+          metric.getTimestamp(),
+          Type.METER,
+          metric.getRole(),
+          metric.getKey(),
+          metric.getValue() + " (" + metric.getRate() + "/s)"
+      ));
+    }
+  }
+
+  private void send(Message message) {
+    template.convertAndSend("/topic/metrics", message);
   }
 
   @Override

@@ -1,3 +1,47 @@
+#template-application, #template-role, #template-meter {
+  visibility: hidden;
+}
+
+.list-group {
+  text-align: left;
+  margin: 0;
+}
+
+.list-group-item {
+  padding: 5px 15px !important;
+}
+
+.meter {
+  line-height: 0.7;
+}
+
+.badge-info {
+  background-color: darkslateblue;
+}
+
+.badge-info:hover {
+  background-color: #2d6987;
+}
+
+.chart-canvas .group-container {
+  border: 1px solid darkslateblue;
+  box-shadow: 2px 2px 19px #aaa;
+  -o-box-shadow: 2px 2px 19px #aaa;
+  -webkit-box-shadow: 2px 2px 19px #aaa;
+  -moz-box-shadow: 2px 2px 19px #aaa;
+  -moz-border-radius: 0.5em;
+  border-radius: 0.5em;
+  z-index: 10;
+  cursor: pointer;
+  position: absolute;
+  padding: 0.7em;
+  font-size: 1em;
+  -webkit-transition: -webkit-box-shadow 0.15s ease-in;
+  -moz-transition: -moz-box-shadow 0.15s ease-in;
+  -o-transition: -o-box-shadow 0.15s ease-in;
+  transition: box-shadow 0.15s ease-in;
+}
+
 .chart-canvas .window {
   border: 1px solid #346789;
   box-shadow: 2px 2px 19px #aaa;
@@ -7,13 +51,11 @@
   -moz-border-radius: 0.5em;
   border-radius: 0.5em;
   opacity: 0.8;
-  width: 80px;
-  height: 80px;
-  line-height: 80px;
-  cursor: pointer;
+  width: 150px;
   text-align: center;
-  z-index: 20;
-  position: absolute;
+  z-index: 10;
+  position: relative;
+  cursor: default;
   background-color: #eeeeef;
   color: black;
   font-family: helvetica, sans-serif;
@@ -42,7 +84,7 @@
 }
 
 .chart-canvas .jtk-connector {
-  z-index: 4;
+  z-index: 20;
 }
 
 .chart-canvas .jtk-endpoint, .endpointTargetLabel, .endpointSourceLabel {

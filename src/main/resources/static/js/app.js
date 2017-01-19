@@ -37,6 +37,7 @@ var connectorHoverStyle = {
   outlineWidth: 5,
   outlineStroke: "white"
 };
+
 var endpointHoverStyle = {
   fill: "#216477",
   stroke: "#216477"
@@ -56,7 +57,7 @@ var endpointOptions = {
     stub: [40, 60],
     gap: 10,
     cornerRadius: 5,
-    alwaysRespectStubs: true
+    alwaysRespectStubs: false
   }],
   connectorStyle: connectorPaintStyle,
   hoverPaintStyle: endpointHoverStyle,
@@ -66,15 +67,7 @@ var endpointOptions = {
   dropOptions: {
     hoverClass: "hover",
     activeClass: "active"
-  },
-  overlays: [
-    ["Label", {
-      location: [0.5, 1.5],
-      label: "Drag",
-      cssClass: "endpointSourceLabel",
-      visible: true
-    }]
-  ]
+  }
 };
 
 jsPlumb.ready(function() {
@@ -85,25 +78,38 @@ jsPlumb.ready(function() {
     },
     ConnectionOverlays: [
       ["Arrow", {
-        location: 1,
+        location: 0.3,
         visible: true,
+        foldback: 0.7,
+        fill: "blue",
         width: 11,
         stroke: "blue",
-        length: 11,
-        id: "ARROW"
+        length: 11
       }],
       ["Label", {
-        location: 0.1,
+        location: 0.5,
         id: "label",
         stroke: "blue",
         cssClass: "aLabel"
-      }]
+      }],
+      ["Arrow", {
+        location: 0.7,
+        visible: true,
+        foldback: 0.7, 
+        fill: "blue",
+        width: 11,
+        stroke: "blue",
+        length: 11
+      }],
     ],
     Container: "canvas"
   });
 
   instance.registerConnectionType("basic", basicType);
-  instance.draggable($(".window"));
+
+  var getRoleId = function(role) {
+    return "actor-" + role;
+  };
 
   var updateLabel = function(connection, label) {
     connection.getOverlay("label").setLabel(label);
@@ -131,23 +137,115 @@ jsPlumb.ready(function() {
         break;
       }
       case "METER": {
-        processMeter(key, field, value);
+        if ("up" == field) {
+          processEndpoint(key, value);
+        } else if ("down" == field) {
+          deleteEndpoint(key, value);
+        } else {
+          processMeter(key, field, value);
+        }
         break;
       }
     }
   };
 
-  var processEndpoint = function(key, value) {
+  var processEndpoint = function(applicationName, roles) {
+    var endpoints = applications[applicationName];
+    if (endpoints) {
+      return;
+    }
+    endpoints = applications[applicationName] = {};
+    var $group = $("#template-application").clone().prop("id", applicationName);
+    $group.find(".title").text(applicationName);
+    $group.appendTo("#canvas");
+
+    _.each(roles.split(","), function(role) {
+      var id = getRoleId(role);
+      if (endpoints[id]) {
+        return;
+      }
+      endpoints[id] = role;
+      $endpoint = $("#template-role").clone().prop("id", id);
+      $endpoint.find(".role").text(role);
+      $endpoint.appendTo($group);
+    });
+
+    instance.draggable($group);
+  };
+
+  var processConnection = function(source, target) {
+    if (_.isEmpty(meters)) {
+      return;
+    }
+    instance.connect({source: getRoleId(source), target: getRoleId(target)});
+  };
+
+  var processMeter = function(role, meter, value) {
+    var id = getRoleId(role);
+    if ("sent" == meter) {
+      var conns = connections[id];
+      if (conns) {
+        _.each(_.values(conns), function(connection) {
+          updateLabel(connection, value);
+        });
+      }
+    } else {
+      var meter_key = id + "-" + meter;
+      if (meters[meter_key]) {
+        return;
+      }
+      meters[meter_key] = meter_key;
+      var $meter = $("#template-meter").clone().removeAttr("id");
+      $meter.find(".badge").text(value);
+      $meter.find(".meter").text(meter);
+      $meter.appendTo("#" + id + " > .list-group");
+    }
+  };
+
+  var deleteEndpoint = function(applicationName, roles) {
+    // clean groups
+    $("#" + applicationName).remove();
+    delete applications[applicationName];
+
+    // clean connections
+    for (var sourceRole in connections) {
+      var conns = connections[sourceRole];
+      _.each(roles.split(","), function(role) {
+        if (sourceRole == role) {
+          _.each(_.values(conns), function(connections) {
+            instance.detach(connection);
+          });
+          delete connections[sourceRole];
+        } else {
+          for (var targetRole in conns) {
+            var connection = conns[targetRole];
+            if (targetRole == role) {
+              instance.detach(connection);
+              delete conns[targetRole];
+            }
+          }
+        }
+      });
+    }
+
+    // clean meters
     
   };
 
-  var processConnection = function(key, value) {
-
-  };
-
-  var processMeter = function(key, field, value) {
-
-  };
+  var applications = {};
+  var connections = {};
+  var meters = {};
+  instance.bind("connection", function (connInfo, originalEvent) {
+    var sourceId = connInfo.sourceId;
+    var targetId = connInfo.targetId;
+    var connection = connInfo.connection;
+    var conns = connections[sourceId];
+    if (conns) {
+      conns[targetId] = connection;
+    } else {
+      connections[sourceId] = {targetId: connection};
+    }
+  });
 
   connect(function(message) {
     if (Array.isArray(message)) {
@@ -159,6 +257,7 @@ jsPlumb.ready(function() {
       processMessage(message);
     }
   });
+
   instance.batch(function() {
 
   });
