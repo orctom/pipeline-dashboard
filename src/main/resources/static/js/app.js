@@ -102,6 +102,8 @@ jsPlumb.ready(function() {
         length: 11
       }],
     ],
+    Connector:[ "Bezier", { curviness: 30 } ],
+    Anchor: "Continuous",
     Container: "canvas"
   });
 
@@ -177,7 +179,17 @@ jsPlumb.ready(function() {
     if (_.isEmpty(meters)) {
       return;
     }
-    instance.connect({source: getRoleId(source), target: getRoleId(target)});
+
+    var literal = source + "-" + target;
+    if (connection_literals[literal]) {
+      return;
+    }
+
+    instance.connect({
+      source: getRoleId(source), 
+      target: getRoleId(target)
+    });
+    connection_literals[literal] = literal;
   };
 
   var processMeter = function(role, meter, value) {
@@ -235,6 +247,7 @@ jsPlumb.ready(function() {
 
   var applications = {};
   var connections = {};
+  var connection_literals = {};
   var meters = {};
   instance.bind("connection", function (connInfo, originalEvent) {
     var sourceId = connInfo.sourceId;
