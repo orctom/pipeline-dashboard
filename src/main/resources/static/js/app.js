@@ -23,53 +23,6 @@ var basicType = {
   ]
 };
 
-var connectorPaintStyle = {
-  strokeWidth: 2,
-  stroke: "#61B7CF",
-  joinstyle: "round",
-  outlineStroke: "white",
-  outlineWidth: 2
-};
-
-var connectorHoverStyle = {
-  strokeWidth: 3,
-  stroke: "#216477",
-  outlineWidth: 5,
-  outlineStroke: "white"
-};
-
-var endpointHoverStyle = {
-  fill: "#216477",
-  stroke: "#216477"
-};
-
-var endpointOptions = {
-  endpoint: "Dot",
-  paintStyle: {
-    stroke: "#7AB02C",
-    fill: "transparent",
-    radius: 7,
-    strokeWidth: 1
-  },
-  isSource: true,
-  isTarget: true,
-  connector: ["Flowchart", {
-    stub: [40, 60],
-    gap: 10,
-    cornerRadius: 5,
-    alwaysRespectStubs: false
-  }],
-  connectorStyle: connectorPaintStyle,
-  hoverPaintStyle: endpointHoverStyle,
-  connectorHoverStyle: connectorHoverStyle,
-  dragOptions: {},
-  maxConnections: -1,
-  dropOptions: {
-    hoverClass: "hover",
-    activeClass: "active"
-  }
-};
-
 jsPlumb.ready(function() {
   var instance = jsPlumb.getInstance({
     DragOptions: {
@@ -78,7 +31,7 @@ jsPlumb.ready(function() {
     },
     ConnectionOverlays: [
       ["Arrow", {
-        location: 0.3,
+        location: 0.1,
         visible: true,
         foldback: 0.7,
         fill: "blue",
@@ -101,9 +54,20 @@ jsPlumb.ready(function() {
         stroke: "blue",
         length: 11
       }],
+      ["Arrow", {
+        location: 1,
+        visible: true,
+        foldback: 0.7, 
+        fill: "blue",
+        width: 11,
+        stroke: "blue",
+        length: 11
+      }],
     ],
-    Connector:[ "Bezier", { curviness: 30 } ],
-    Anchor: "Continuous",
+    ReattachConnections: true,
+    Endpoints:["Blank","Blank"],
+    Connector:"Bezier",
+    Anchor: ["Continuous", { faces:[ "left", "right" ] } ],
     Container: "canvas"
   });
 
@@ -117,11 +81,26 @@ jsPlumb.ready(function() {
     connection.getOverlay("label").setLabel(label);
   };
 
-  var addEndpoint = function($endpoint, uuid) {
-    instance.addEndpoint($endpoint, endpointOptions, {
-      anchor: "Continuous",
-      uuid: uuid
+  var updateLayout = function() {
+    var $canvas = $("#canvas");
+    var canvasWidth = $canvas.outerWidth();
+    
+    var x = 0, y = 50, xSpan = 250, ySpan = 180;
+    $canvas.find(".group-container").each(function() {
+      var $group = $(this);
+      var groupWidth = $group.outerWidth();
+      var top = y + 'px';
+      var left = x + 'px';
+      $group.css({left:left,top:top});
+      
+      x += (groupWidth + xSpan);
+      if (x + groupWidth >= canvasWidth) {
+        y += ($group.outerHeight() + ySpan);
+        x = 0;
+      }
     });
+
+    instance.repaintEverything();
   };
 
   var processMessage = function(message) {
@@ -166,13 +145,15 @@ jsPlumb.ready(function() {
       if (endpoints[id]) {
         return;
       }
-      endpoints[id] = role;
       $endpoint = $("#template-role").clone().prop("id", id);
       $endpoint.find(".role").text(role);
       $endpoint.appendTo($group);
+
+      endpoints[id] = role;
     });
 
     instance.draggable($group);
+    updateLayout();
   };
 
   var processConnection = function(source, target) {
@@ -224,15 +205,19 @@ jsPlumb.ready(function() {
     for (var sourceRole in connections) {
       var conns = connections[sourceRole];
       _.each(roles.split(","), function(role) {
-        if (sourceRole == role) {
-          _.each(_.values(conns), function(connections) {
-            instance.detach(connection);
-          });
+        var roleId = getRoleId(role);
+        if (sourceRole == roleId) {
+          for (var targetRole in conns) {
+            var connection = conns[targetRole];
+            if (connection) {
+              instance.detach(connection);
+            }
+          }
           delete connections[sourceRole];
         } else {
           for (var targetRole in conns) {
             var connection = conns[targetRole];
-            if (targetRole == role) {
+            if (targetRole == roleId) {
               instance.detach(connection);
               delete conns[targetRole];
             }
@@ -242,7 +227,13 @@ jsPlumb.ready(function() {
     }
 
     // clean meters
-
+    _.each(roles.split(","), function(role) {
+      for(var key in meters) {
+        if (key.startsWith("actor-" + role + "-")) {
+          delete meters[key];
+        }
+      }
+    });
   };
 
   var applications = {};
