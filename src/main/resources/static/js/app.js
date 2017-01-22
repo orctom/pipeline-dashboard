@@ -23,12 +23,12 @@ var basicType = {
   ]
 };
 
+var randomColor = function() {
+  return '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+};
+
 jsPlumb.ready(function() {
   var instance = jsPlumb.getInstance({
-    DragOptions: {
-      cursor: 'pointer',
-      zIndex: 2000
-    },
     ConnectionOverlays: [
       ["Arrow", {
         location: 0.1,
@@ -65,8 +65,8 @@ jsPlumb.ready(function() {
       }],
     ],
     ReattachConnections: true,
-    Endpoints:["Blank","Blank"],
-    Connector:"Bezier",
+    Endpoints: ["Blank","Blank"],
+    Connector: "Bezier",
     Anchor: ["Continuous", { faces:[ "left", "right" ] } ],
     Container: "canvas"
   });
@@ -149,6 +149,7 @@ jsPlumb.ready(function() {
       $endpoint.find(".role").text(role);
       $endpoint.appendTo($group);
 
+      endpointsWithEmptyMeters[id] = role;
       endpoints[id] = role;
     });
 
@@ -157,7 +158,7 @@ jsPlumb.ready(function() {
   };
 
   var processConnection = function(source, target) {
-    if (_.isEmpty(meters)) {
+    if (!_.isEmpty(endpointsWithEmptyMeters)) {
       return;
     }
 
@@ -168,7 +169,8 @@ jsPlumb.ready(function() {
 
     instance.connect({
       source: getRoleId(source), 
-      target: getRoleId(target)
+      target: getRoleId(target),
+      paintStyle: { stroke: randomColor() },
     });
     connection_literals[literal] = literal;
   };
@@ -192,6 +194,8 @@ jsPlumb.ready(function() {
         $meter.find(".meter").text(meter);
         $meter.appendTo("#" + id + " > .list-group");
         meters[meter_key] = meter_key;
+
+        delete endpointsWithEmptyMeters[id];
       }
     }
   };
@@ -237,6 +241,7 @@ jsPlumb.ready(function() {
   };
 
   var applications = {};
+  var endpointsWithEmptyMeters = {};
   var connections = {};
   var connection_literals = {};
   var meters = {};
