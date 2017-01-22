@@ -1,1 +1,1 @@
-# pipeline-console
+# pipeline-dashboard

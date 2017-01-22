@@ -10,7 +10,7 @@
   </parent>
 
   <groupId>com.orctom.pipeline</groupId>
-  <artifactId>pipeline-console</artifactId>
+  <artifactId>pipeline-dashboard</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
