@@ -1,4 +1,4 @@
-package com.orctom.pipeline.model;
+package com.orctom.pipeline.dashboard.model;
 
 public class Connection {
 

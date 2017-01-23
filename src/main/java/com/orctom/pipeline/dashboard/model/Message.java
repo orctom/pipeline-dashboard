@@ -1,4 +1,4 @@
-package com.orctom.pipeline.model;
+package com.orctom.pipeline.dashboard.model;
 
 public class Message {
 
@@ -42,6 +42,24 @@ public class Message {
 
   public String getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Message message = (Message) o;
+
+    if (!key.equals(message.key)) return false;
+    return field != null ? field.equals(message.field) : message.field == null;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = key.hashCode();
+    result = 31 * result + (field != null ? field.hashCode() : 0);
+    return result;
   }
 
   @Override

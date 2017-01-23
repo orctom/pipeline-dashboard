@@ -14,6 +14,10 @@
     <appender-ref ref="stdout"/>
   </logger>
 
+  <logger name="com.orctom.laputa" level="warn" additivity="false">
+    <appender-ref ref="stdout"/>
+  </logger>
+
   <logger name="akka" level="warn" additivity="false">
     <appender-ref ref="stdout"/>
   </logger>

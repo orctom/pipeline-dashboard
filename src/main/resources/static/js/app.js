@@ -24,8 +24,12 @@ var basicType = {
 };
 
 var randomColor = function() {
-  return '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+  return '#'+(0x1000000+(Math.random())*0x0fffff).toString(16).substr(1,6);
 };
+
+var normalize = function(name) {
+  return name.replace(/[^0-9a-zA-Z_-]/g, "_");
+}
 
 jsPlumb.ready(function() {
   var instance = jsPlumb.getInstance({
@@ -73,10 +77,6 @@ jsPlumb.ready(function() {
 
   instance.registerConnectionType("basic", basicType);
 
-  var getRoleId = function(role) {
-    return "actor-" + role;
-  };
-
   var updateLabel = function(connection, label) {
     connection.getOverlay("label").setLabel(label);
   };
@@ -114,7 +114,7 @@ jsPlumb.ready(function() {
         break;
       }
       case "CONNECTION": {
-        processConnection(key, value);
+        processConnection(key, field, value);
         break;
       }
       case "METER": {
@@ -131,91 +131,109 @@ jsPlumb.ready(function() {
   };
 
   var processEndpoint = function(applicationName, roles) {
-    var endpoints = applications[applicationName];
+    var normalizedApplicationName = normalize(applicationName);
+    var endpoints = applications[normalizedApplicationName];
     if (endpoints) {
       return;
     }
-    endpoints = applications[applicationName] = {};
-    var $group = $("#template-application").clone().prop("id", applicationName);
+    endpoints = applications[normalizedApplicationName] = {};
+    var $group = $("#template-application").clone().prop("id", normalizedApplicationName);
     $group.find(".title").text(applicationName);
     $group.appendTo("#canvas");
 
     _.each(roles.split(","), function(role) {
-      var id = getRoleId(role);
-      if (endpoints[id]) {
+      var roleId = normalizedApplicationName + "-" + role;
+      if (endpoints[roleId]) {
         return;
       }
-      $endpoint = $("#template-role").clone().prop("id", id);
+      $endpoint = $("#template-role").clone().prop("id", roleId);
       $endpoint.find(".role").text(role);
       $endpoint.appendTo($group);
 
-      endpointsWithEmptyMeters[id] = role;
-      endpoints[id] = role;
+      endpointsWithEmptyMeters[roleId] = role;
+      endpoints[roleId] = role;
+
+      if (rolesMapping[role]) {
+        rolesMapping[role].push(roleId);
+      } else {
+        rolesMapping[role] = [roleId];
+      }
     });
 
     instance.draggable($group);
     updateLayout();
   };
 
-  var processConnection = function(source, target) {
+  var processConnection = function(source, prefix, targetRoles) {
     if (!_.isEmpty(endpointsWithEmptyMeters)) {
       return;
     }
 
-    var literal = source + "-" + target;
-    if (connection_literals[literal]) {
-      return;
-    }
+    var sourceRoleId = prefix + "-" + source;
+    _.each(targetRoles.split(","), function(targetRole) {
+      _.each(rolesMapping[targetRole], function(targetRoleId) {
+        var literal = sourceRoleId + "-" + targetRoleId;
+        if (connectionLiterals[literal]) {
+          return;
+        }
 
-    instance.connect({
-      source: getRoleId(source), 
-      target: getRoleId(target),
-      paintStyle: { stroke: randomColor() },
+        instance.connect({
+          source: sourceRoleId, 
+          target: targetRoleId,
+          paintStyle: { stroke: randomColor(), startsWith: 3 },
+        });
+      });
     });
-    connection_literals[literal] = literal;
   };
 
-  var processMeter = function(role, meter, value) {
-    var id = getRoleId(role);
+  var processMeter = function(roleId, meter, value) {
     if ("sent" == meter) {
-      var conns = connections[id];
+      var conns = connections[roleId];
       if (conns) {
         _.each(_.values(conns), function(connection) {
           updateLabel(connection, value);
         });
       }
     } else {
-      var meter_key = id + "-" + meter;
+      var meter_key = roleId + "-" + meter;
       if (meters[meter_key]) {
-        $("#" + id + " ." + meter).text(value);
+        $("#" + roleId + " ." + meter).text(value);
       } else {
         var $meter = $("#template-meter").clone().removeAttr("id");
         $meter.find(".badge").text(value).addClass(meter);
         $meter.find(".meter").text(meter);
-        $meter.appendTo("#" + id + " > .list-group");
+        $meter.appendTo("#" + roleId + " > .list-group");
         meters[meter_key] = meter_key;
 
-        delete endpointsWithEmptyMeters[id];
+        delete endpointsWithEmptyMeters[roleId];
       }
     }
   };
 
   var deleteEndpoint = function(applicationName, roles) {
-    // clean groups
-    $("#" + applicationName).remove();
-    delete applications[applicationName];
+    var normalizedApplicationName = normalize(applicationName);
+    deleteApplication(normalizedApplicationName);
+    deleteConnections(normalizedApplicationName, roles);
+    deleteMeters(normalizedApplicationName, roles);
+  };
 
-    // clean connections
+  var deleteApplication = function(normalizedApplicationName) {
+    $("#" + normalizedApplicationName).remove();
+    delete applications[normalizedApplicationName];
+  };
+
+  var deleteConnections = function(normalizedApplicationName, roles) {
     for (var sourceRole in connections) {
       var conns = connections[sourceRole];
       _.each(roles.split(","), function(role) {
-        var roleId = getRoleId(role);
+        var roleId = normalizedApplicationName + "-" + role;
         if (sourceRole == roleId) {
           for (var targetRole in conns) {
             var connection = conns[targetRole];
             if (connection) {
               instance.detach(connection);
             }
+            deleteConnectionLiterals(sourceRole, targetRole);
           }
           delete connections[sourceRole];
         } else {
@@ -224,16 +242,24 @@ jsPlumb.ready(function() {
             if (targetRole == roleId) {
               instance.detach(connection);
               delete conns[targetRole];
+              deleteConnectionLiterals(sourceRole, targetRole);
             }
           }
         }
       });
     }
+  };
 
-    // clean meters
+  var deleteConnectionLiterals = function(sourceRoleId, targetRoleId) {
+    var literal = sourceRoleId + "-" + targetRoleId;
+    delete connectionLiterals[literal];
+  };
+
+  var deleteMeters = function(normalizedApplicationName, roles) {
     _.each(roles.split(","), function(role) {
+      var roleId = normalizedApplicationName + "-" + role;
       for(var key in meters) {
-        if (key.startsWith("actor-" + role + "-")) {
+        if (key.startsWith(roleId)) {
           delete meters[key];
         }
       }
@@ -242,8 +268,9 @@ jsPlumb.ready(function() {
 
   var applications = {};
   var endpointsWithEmptyMeters = {};
+  var rolesMapping = {};
   var connections = {};
-  var connection_literals = {};
+  var connectionLiterals = {};
   var meters = {};
   instance.bind("connection", function (connInfo, originalEvent) {
     var sourceId = connInfo.sourceId;
@@ -253,8 +280,12 @@ jsPlumb.ready(function() {
     if (conns) {
       conns[targetId] = connection;
     } else {
-      connections[sourceId] = {targetId: connection};
+      connections[sourceId] = {};
+      connections[sourceId][targetId] = connection;
     }
+    
+    var literal = sourceId + "-" + targetId;
+    connectionLiterals[literal] = literal;
   });
 
   connect(function(message) {
@@ -266,9 +297,5 @@ jsPlumb.ready(function() {
     } else {
       processMessage(message);
     }
-  });
-
-  instance.batch(function() {
-
   });
 });
