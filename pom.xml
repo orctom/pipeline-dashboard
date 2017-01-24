@@ -116,7 +116,7 @@
           </dependency>
         </dependencies>
         <configuration>
-          <mainClass>com.orctom.pipeline.dashboard.PipelineConsoleApplication</mainClass>
+          <mainClass>com.orctom.pipeline.dashboard.PipelineDashboardApplication</mainClass>
           <addResources>true</addResources>
           <executable>true</executable>
         </configuration>

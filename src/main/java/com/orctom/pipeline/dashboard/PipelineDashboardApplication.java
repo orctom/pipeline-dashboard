@@ -11,19 +11,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @SpringBootApplication
 @Import(WebSocketConfig.class)
-public class PipelineConsoleApplication extends WebMvcConfigurerAdapter {
+public class PipelineDashboardApplication extends WebMvcConfigurerAdapter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PipelineConsoleApplication.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PipelineDashboardApplication.class);
 
   public static void main(String[] args) {
 
-    ApplicationContext applicationContext = SpringApplication.run(PipelineConsoleApplication.class, args);
+    ApplicationContext applicationContext = SpringApplication.run(PipelineDashboardApplication.class, args);
 
     try {
       Pipeline.getInstance()
           .withApplicationName("collector")
           .withApplicationContext(applicationContext)
-          .run(PipelineConsoleApplication.class);
+          .run(PipelineDashboardApplication.class);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       SpringApplication.exit(applicationContext);
