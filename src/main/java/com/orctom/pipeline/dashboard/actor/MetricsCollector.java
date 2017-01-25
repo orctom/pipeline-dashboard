@@ -63,17 +63,20 @@ class MetricsCollector extends AbstractMetricsCollector {
           metric.getRole()
       ));
 
-    } else {
+    } else if ("inbox".equals(metricType) || "ready".equals(metricType) || "sent".equals(metricType)) {
       String normalizedApplicationName = normalize(metric.getApplicationName());
       Message message = new Message(
           metric.getTimestamp(),
           Type.METER,
           normalizedApplicationName + "-" + metric.getRole(),
-          metric.getKey(),
+          metricType,
           metric.getValue() + " (" + metric.getRate() + "/s)"
       );
       send(message);
       MetricsData.setMeter(message);
+
+    } else {
+      LOGGER.info("{}-{}, {}: {}", metric.getApplicationName(), metric.getRole(), metricType, metric.getValue());
     }
   }
 
