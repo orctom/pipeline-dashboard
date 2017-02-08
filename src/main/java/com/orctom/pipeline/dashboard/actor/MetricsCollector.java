@@ -17,8 +17,7 @@ import javax.annotation.Resource;
 
 import java.util.regex.Pattern;
 
-import static com.orctom.pipeline.Constants.MEMBER_EVENT_DOWN;
-import static com.orctom.pipeline.Constants.MEMBER_EVENT_UP;
+import static com.orctom.pipeline.Constants.*;
 
 @Actor(role = "metrics-collector")
 class MetricsCollector extends AbstractMetricsCollector {
@@ -63,7 +62,7 @@ class MetricsCollector extends AbstractMetricsCollector {
           metric.getRole()
       ));
 
-    } else if ("inbox".equals(metricType) || "ready".equals(metricType) || "sent".equals(metricType)) {
+    } else if (METER_INBOX.equals(metricType) || METER_PROCESSED.equals(metricType) || METER_SENT.equals(metricType)) {
       String normalizedApplicationName = normalize(metric.getApplicationName());
       Message message = new Message(
           metric.getTimestamp(),
