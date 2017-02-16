@@ -21,7 +21,7 @@ public class PipelineDashboardApplication extends WebMvcConfigurerAdapter {
 
     try {
       Pipeline.getInstance()
-          .withApplicationName("collector")
+          .withApplicationName("dashboard")
           .withApplicationContext(applicationContext)
           .run(PipelineDashboardApplication.class);
     } catch (Exception e) {

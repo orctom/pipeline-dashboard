@@ -40,12 +40,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <version>${spring.boot.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
       <version>${spring.version}</version>
@@ -99,6 +93,18 @@
       <artifactId>spring-boot-devtools</artifactId>
       <version>${spring.boot.version}</version>
       <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${spring.boot.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <version>${spring.boot.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
